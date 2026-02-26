@@ -2,10 +2,19 @@
     "name": "hello_world",
     "version": "1.0.0",
     "description": "Hello world in Node.js",
-    "main": "index.js",
+    "main": "server.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node server.js",
+        "start:https": "SSL_KEY_PATH=./key.pem SSL_CERT_PATH=./cert.pem node server.js"
     },
     "author": "hxu",
-    "license": "MIT"
+    "license": "MIT",
+    "dependencies": {
+        "cors": "^2.8.6",
+        "express": "^4.21.2",
+        "express-rate-limit": "^8.2.1",
+        "express-validator": "^7.3.1",
+        "helmet": "^8.1.0"
+    }
 }
