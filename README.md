@@ -3,7 +3,7 @@ test project for backprop integration. Do not touch!
 
 ## Security Features
 
-This server is hardened with a comprehensive security middleware stack built on [Express.js](https://expressjs.com/) (v4.21.2):
+This server is hardened with a comprehensive security middleware stack built on [Express.js](https://expressjs.com/) (v4.22.1):
 
 - **Helmet.js** (v8.1.0) — Sets 13 HTTP security response headers automatically, including Content-Security-Policy, Strict-Transport-Security, X-Content-Type-Options, X-Frame-Options, and Referrer-Policy. Removes the `X-Powered-By` header to prevent server fingerprinting.
 - **CORS** (v2.8.6) — Configurable Cross-Origin Resource Sharing policy with origin whitelist. Allowed methods: GET, POST, OPTIONS. Allowed headers: Content-Type, Authorization. Supports preflight handling for complex requests.
