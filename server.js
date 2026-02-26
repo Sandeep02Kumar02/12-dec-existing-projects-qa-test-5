@@ -19,7 +19,7 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const { rateLimit } = require('express-rate-limit');
-const { body, validationResult } = require('express-validator');
+const { body, validationResult, matchedData } = require('express-validator');
 
 // --- Node.js Built-in Modules (used conditionally for HTTPS) ---
 const https = require('https');
@@ -82,7 +82,7 @@ app.use(cors({
  */
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,   // 15-minute window
-  max: 100,                     // Maximum 100 requests per window per IP
+  limit: 100,                    // Maximum 100 requests per window per IP
   standardHeaders: 'draft-8',  // IETF draft-8 RateLimit combined header
   legacyHeaders: false          // Disable deprecated X-RateLimit-* headers
 });
@@ -135,7 +135,7 @@ app.post('/data',
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    res.status(200).json({ status: 'success', data: req.body });
+    res.status(200).json({ status: 'success', data: matchedData(req) });
   }
 );
 
@@ -153,6 +153,9 @@ app.post('/data',
  */
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
   console.error(err.stack);
   res.status(500).json({ error: 'Internal Server Error' });
 });
