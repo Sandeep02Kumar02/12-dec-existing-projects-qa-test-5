@@ -148,8 +148,11 @@ app.post('/data',
  *
  * Catches all unhandled errors propagated through the middleware chain.
  * Logs the error stack for debugging and returns a safe generic error
- * response to the client. The 4-parameter signature (err, req, res, next)
- * is required for Express to identify this as an error-handling middleware.
+ * response to the client. Uses err.status or err.statusCode if set by
+ * upstream middleware (e.g., body-parser sets 400 for JSON parse errors),
+ * falling back to 500 for unexpected errors. The 4-parameter signature
+ * (err, req, res, next) is required for Express to identify this as an
+ * error-handling middleware.
  */
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
@@ -157,7 +160,9 @@ app.use((err, req, res, next) => {
     return next(err);
   }
   console.error(err.stack);
-  res.status(500).json({ error: 'Internal Server Error' });
+  const statusCode = err.status || err.statusCode || 500;
+  const message = statusCode >= 500 ? 'Internal Server Error' : 'Bad Request';
+  res.status(statusCode).json({ error: message });
 });
 
 // =============================================================================
