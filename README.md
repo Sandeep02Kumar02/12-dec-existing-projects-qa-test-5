@@ -6,7 +6,7 @@ test project for backprop integration. Do not touch!
 This server is hardened with a comprehensive security middleware stack built on [Express.js](https://expressjs.com/) (v4.21.2):
 
 - **Helmet.js** (v8.1.0) — Sets 13 HTTP security response headers automatically, including Content-Security-Policy, Strict-Transport-Security, X-Content-Type-Options, X-Frame-Options, and Referrer-Policy. Removes the `X-Powered-By` header to prevent server fingerprinting.
-- **CORS** (v2.8.6) — Configurable Cross-Origin Resource Sharing policy with origin whitelist. Supports preflight handling for complex requests.
+- **CORS** (v2.8.6) — Configurable Cross-Origin Resource Sharing policy with origin whitelist. Allowed methods: GET, POST, OPTIONS. Allowed headers: Content-Type, Authorization. Supports preflight handling for complex requests.
 - **Rate Limiting** (v8.2.1) — IP-based request throttling with a default of 100 requests per 15-minute window per IP. Sends IETF-standard `RateLimit` headers in every response.
 - **Input Validation** (v7.3.1) — Request body validation and sanitization via express-validator. Returns structured error messages for invalid input.
 - **HTTPS/TLS Support** — Optional HTTPS server on port 3443 via the Node.js built-in `https` module with configurable TLS certificate paths.
