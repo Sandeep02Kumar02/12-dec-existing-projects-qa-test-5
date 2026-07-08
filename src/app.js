@@ -15,6 +15,11 @@ app.use(cors());
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+morgan.token('url', (req) => {
+  const original = req.originalUrl || req.url || '';
+  const queryIndex = original.indexOf('?');
+  return queryIndex === -1 ? original : original.slice(0, queryIndex);
+});
 app.use(morgan('combined', { stream: logger.stream }));
 
 app.use('/', routes);

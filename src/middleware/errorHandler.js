@@ -1,7 +1,7 @@
 const logger = require('../config/logger');
 
 const notFound = (req, res, next) => {
-  res.status(404).json({ error: 'Not Found', path: req.originalUrl });
+  res.status(404).json({ error: 'Not Found', path: req.path });
 };
 
 const errorHandler = (err, req, res, next) => {
