@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Environment variables (never commit secrets; commit .env.example only)
+.env
+
+# Logs - ignore contents but keep the directory via .gitkeep
+logs/*
+!logs/.gitkeep
+*.log
+
+# PM2 runtime dumps
+.pm2/
+pm2.pid
