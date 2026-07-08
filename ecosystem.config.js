@@ -5,7 +5,7 @@
 module.exports = {
   apps: [
     {
-      // Process identity and entry point (kept in sync with package.json "main").
+      // Process identity and entry point.
       name: 'hello_world',
       script: './server.js',
 
@@ -20,23 +20,25 @@ module.exports = {
       max_restarts: 10,
       min_uptime: '10s',
 
-      // Log destinations (the logs/ directory is git-ignored except for .gitkeep).
+      // Log destinations.
       error_file: './logs/pm2-error.log',
       out_file: './logs/pm2-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
 
-      // Default (development) environment — preserves the original 127.0.0.1:3000 bind.
+      // Default (development) environment.
       env: {
         NODE_ENV: 'development',
         PORT: 3000,
-        HOST: '127.0.0.1'
+        HOST: '127.0.0.1',
+        LOG_LEVEL: 'info'
       },
 
-      // Production environment — binds 0.0.0.0 for container/host exposure.
+      // Production environment.
       env_production: {
         NODE_ENV: 'production',
         PORT: 3000,
-        HOST: '0.0.0.0'
+        HOST: '0.0.0.0',
+        LOG_LEVEL: 'info'
       }
     }
   ]

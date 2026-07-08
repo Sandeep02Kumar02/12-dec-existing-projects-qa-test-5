@@ -28,6 +28,7 @@ see the decision log below for why Express's `res.type()`/`res.send()` helpers a
 | Set the PM2 `script` and `package.json` `main` to `server.js` | Introduce a new `index.js` entry point | Reconciles the pre-existing `main` mismatch (it pointed at a nonexistent `index.js`) to a real file | None significant |
 | Default `HOST=127.0.0.1` (production `0.0.0.0` via PM2 `env_production`) | Always bind `0.0.0.0` | Preserves the original development bind of the source server | Production exposure requires the override to be set intentionally |
 | Regenerate `package-lock.json` via `npm install` | Hand-edit the lockfile | Correctness — the package manager owns the resolved dependency tree | None |
+| Simplify the `dev` npm script to `node server.js` | Keep `NODE_ENV=development node server.js` (POSIX-only inline env var); add a `cross-env` devDependency; add a JS launcher script | The POSIX inline `VAR=value` form fails on the Windows/PowerShell shell that npm uses on the target host, so the documented dev command did not run there. `src/config/index.js` already defaults `NODE_ENV` to `development` when it is unset, so a plain `node server.js` runs in development mode on every platform. `cross-env` and a launcher file were rejected to honor the Make-minimal-changes rule and the fixed dependency set (AAP 0.4 / 0.3.2); no new dependency or file is introduced | `dev` and `start` are now identical; acceptable for a single trivial service and can diverge later if a file watcher is added |
 
 ## 2. Bidirectional Traceability Matrix (raw `http` → Express)
 
@@ -71,7 +72,7 @@ npm install
 
 ```bash
 npm start      # node server.js
-npm run dev    # NODE_ENV=development node server.js
+npm run dev    # node server.js  (NODE_ENV defaults to development)
 ```
 
 The server binds to `http://127.0.0.1:3000/` by default. Verify the preserved contract and the
