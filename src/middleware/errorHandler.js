@@ -7,7 +7,8 @@ const notFound = (req, res, next) => {
 const errorHandler = (err, req, res, next) => {
   const status = err.status || err.statusCode || 500;
   logger.error(err.message, { stack: err.stack });
-  res.status(status).json({ error: err.message || 'Internal Server Error' });
+  const message = status >= 500 ? 'Internal Server Error' : (err.message || 'Error');
+  res.status(status).json({ error: message });
 };
 
 module.exports = { notFound, errorHandler };

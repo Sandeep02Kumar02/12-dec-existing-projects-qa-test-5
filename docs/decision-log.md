@@ -7,8 +7,11 @@ every non-trivial implementation decision be recorded with rationale in a decisi
 (never in code comments), and that a migration include a **bidirectional traceability matrix**
 at 100% coverage.
 
-The externally observable behavior of the original endpoint is preserved exactly: `GET /`
-still returns HTTP `200`, `Content-Type: text/plain`, and the body `Hello, World!\n`.
+The externally observable behavior of the original endpoint is preserved exactly, byte-for-byte:
+`GET /` still returns HTTP `200`, the exact header `Content-Type: text/plain` (with no `charset`
+suffix), and the body `Hello, World!\n`. This exact fidelity is achieved by reproducing the
+original raw response calls (`res.statusCode` / `res.setHeader` / `res.end`) in the routed handler;
+see the decision log below for why Express's `res.type()`/`res.send()` helpers are deliberately avoided.
 
 ## 1. Decision Log
 
@@ -19,6 +22,7 @@ still returns HTTP `200`, `Content-Type: text/plain`, and the body `Hello, World
 | Use Morgan + Winston for logging | Morgan only; Pino | Morgan captures HTTP request logs while Winston provides leveled application logs with console + file transports; a conventional pairing | Two libraries; negligible overhead |
 | Include `helmet`, `cors`, and `compression` middleware | Omit for ultra-minimalism | "add middleware" plus "prepare for production" reasonably encompass baseline security headers, CORS, and response compression | Mild scope expansion; flagged here so it can be dropped if undesired |
 | Add a `GET /health` readiness route | Omit it | Standard readiness probe for PM2 / monitoring / production | One endpoint beyond the literal request; low risk |
+| Preserve `GET /` using the raw response methods (`res.statusCode` / `res.setHeader` / `res.end`) | Express helpers `res.type('text/plain')` + `res.send('Hello, World!\n')`, or `res.set('Content-Type', 'text/plain')` | In Express 5, `res.type()`, `res.send()`, and `res.set()` all append `; charset=utf-8` to a `text/plain` Content-Type, yielding `text/plain; charset=utf-8` and breaking the mandatory byte-for-byte contract (AAP §0.8.1, §0.5.3). Reproducing the original `server.js` raw calls (L7-L9) verbatim yields the exact header `Content-Type: text/plain` and body `Hello, World!\n` | Slightly less idiomatic than the Express helpers; negligible given the single trivial legacy route |
 | Keep route handlers inline (no controllers/services/models) | Full MVC layering | A single trivial endpoint; extra layering would violate the minimal-changes rule | Revisit if the application grows |
 | Do **not** modify `README.md` | Add usage/deploy docs to `README.md` | Honors the "Do not touch!" guardrail in `README.md` and the minimal-changes rule | Usage/deploy notes are relocated to this decision log (see §3) |
 | Set the PM2 `script` and `package.json` `main` to `server.js` | Introduce a new `index.js` entry point | Reconciles the pre-existing `main` mismatch (it pointed at a nonexistent `index.js`) to a real file | None significant |
@@ -35,9 +39,9 @@ source construct to the target implementation that replaces it.
 | `const http = require('http')` (L1) | `require('express')` in `src/app.js`; `require('./src/app')` in `server.js` |
 | `hostname = '127.0.0.1'`, `port = 3000` (L3-L4) | `config.host`, `config.port` in `src/config/index.js` (defaults preserve the values) |
 | `http.createServer((req, res) => { ... })` (L6) | `express()` app + `express.Router()` in `src/routes/index.js` |
-| `res.statusCode = 200` (L7) | `res.status(200)` in the `GET /` handler |
-| `res.setHeader('Content-Type', 'text/plain')` (L8) | `res.type('text/plain')` in the `GET /` handler |
-| `res.end('Hello, World!\n')` (L9) | `res.send('Hello, World!\n')` in the `GET /` handler |
+| `res.statusCode = 200` (L7) | `res.statusCode = 200` in the `GET /` handler (preserved verbatim) |
+| `res.setHeader('Content-Type', 'text/plain')` (L8) | `res.setHeader('Content-Type', 'text/plain')` in the `GET /` handler (raw Node method; avoids the `; charset=utf-8` that Express's `res.type()`/`res.send()` would append) |
+| `res.end('Hello, World!\n')` (L9) | `res.end('Hello, World!\n')` in the `GET /` handler (raw Node method; no `res.send()` body mutation) |
 | `server.listen(port, hostname, cb)` (L12) | `app.listen(config.port, config.host, cb)` in `server.js` |
 | `console.log('Server running at ...')` (L13) | `logger.info('Server running at ...')` via Winston |
 
