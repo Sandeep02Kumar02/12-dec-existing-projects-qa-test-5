@@ -22,6 +22,7 @@ see the decision log below for why Express's `res.type()`/`res.send()` helpers a
 | Use Morgan + Winston for logging | Morgan only; Pino | Morgan captures HTTP request logs while Winston provides leveled application logs with console + file transports; a conventional pairing | Two libraries; negligible overhead |
 | Include `helmet`, `cors`, and `compression` middleware | Omit for ultra-minimalism | "add middleware" plus "prepare for production" reasonably encompass baseline security headers, CORS, and response compression | Mild scope expansion; flagged here so it can be dropped if undesired |
 | Add a `GET /health` readiness route | Omit it | Standard readiness probe for PM2 / monitoring / production | One endpoint beyond the literal request; low risk |
+| Add a `GET /good-evening` route returning the plaintext body `Good evening\n` | Return the greeting as JSON; use the Express `res.type()` / `res.send()` helpers; mount at a different path such as `/evening` or `/greeting`; omit the trailing newline | The user's follow-up request explicitly asked to "add another endpoint that returns the response of `Good evening`". The handler reuses the same raw Node response methods (`res.statusCode` / `res.setHeader` / `res.end`) as the preserved `GET /` handler so the routes file stays internally consistent and the response carries the exact header `Content-Type: text/plain` (avoiding the `; charset=utf-8` suffix that Express's `res.type()`/`res.send()` would append). The trailing `\n` mirrors the existing `Hello, World!\n` convention, and the self-descriptive kebab-case path `/good-evening` avoids collision with `/` and `/health` | One endpoint beyond the original tutorial; low risk; no impact on the preserved `GET /` contract |
 | Preserve `GET /` using the raw response methods (`res.statusCode` / `res.setHeader` / `res.end`) | Express helpers `res.type('text/plain')` + `res.send('Hello, World!\n')`, or `res.set('Content-Type', 'text/plain')` | In Express 5, `res.type()`, `res.send()`, and `res.set()` all append `; charset=utf-8` to a `text/plain` Content-Type, yielding `text/plain; charset=utf-8` and breaking the mandatory byte-for-byte contract (AAP §0.8.1, §0.5.3). Reproducing the original `server.js` raw calls (L7-L9) verbatim yields the exact header `Content-Type: text/plain` and body `Hello, World!\n` | Slightly less idiomatic than the Express helpers; negligible given the single trivial legacy route |
 | Keep route handlers inline (no controllers/services/models) | Full MVC layering | A single trivial endpoint; extra layering would violate the minimal-changes rule | Revisit if the application grows |
 | Do **not** modify `README.md` | Add usage/deploy docs to `README.md` | Honors the "Do not touch!" guardrail in `README.md` and the minimal-changes rule | Usage/deploy notes are relocated to this decision log (see §3) |
@@ -78,12 +79,13 @@ npm start      # node server.js
 npm run dev    # node server.js  (NODE_ENV defaults to development)
 ```
 
-The server binds to `http://127.0.0.1:3000/` by default. Verify the preserved contract and the
-new readiness probe:
+The server binds to `http://127.0.0.1:3000/` by default. Verify the preserved contract, the
+additional greeting endpoint, and the readiness probe:
 
 ```bash
-curl -i http://127.0.0.1:3000/         # 200, Content-Type: text/plain, body "Hello, World!"
-curl -i http://127.0.0.1:3000/health   # JSON readiness status
+curl -i http://127.0.0.1:3000/               # 200, Content-Type: text/plain, body "Hello, World!"
+curl -i http://127.0.0.1:3000/good-evening   # 200, Content-Type: text/plain, body "Good evening"
+curl -i http://127.0.0.1:3000/health         # JSON readiness status
 ```
 
 ### Deploy with PM2
