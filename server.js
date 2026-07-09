@@ -1,14 +1,9 @@
-const http = require('http');
+const config = require('./src/config');
+const logger = require('./src/config/logger');
+const app = require('./src/app');
 
-const hostname = '127.0.0.1';
-const port = 3000;
-
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello, World!\n');
+const server = app.listen(config.port, config.host, () => {
+  logger.info(`Server running at http://${config.host}:${config.port}/`);
 });
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
+module.exports = server;

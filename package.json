@@ -2,10 +2,30 @@
     "name": "hello_world",
     "version": "1.0.0",
     "description": "Hello world in Node.js",
-    "main": "index.js",
+    "main": "server.js",
     "scripts": {
+        "start": "node server.js",
+        "dev": "node server.js",
+        "prod": "pm2 start ecosystem.config.js --env production",
+        "reload": "pm2 reload ecosystem.config.js --env production",
+        "logs": "pm2 logs",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "hxu",
-    "license": "MIT"
+    "license": "MIT",
+    "engines": {
+        "node": ">=18"
+    },
+    "dependencies": {
+        "compression": "^1.8.1",
+        "cors": "^2.8.6",
+        "dotenv": "^17.4.2",
+        "express": "^5.2.1",
+        "helmet": "^8.2.0",
+        "morgan": "^1.11.0",
+        "winston": "^3.19.0"
+    },
+    "devDependencies": {
+        "pm2": "^7.0.3"
+    }
 }
